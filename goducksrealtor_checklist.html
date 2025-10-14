@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TC Checklist & Timeline — CA Realtor</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+  body{background:#f6f8fb;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;font-size:0.95rem}
+  .card-header .h6 {margin:0}
+  .form-chip{display:inline-block;margin:3px;padding:6px 10px;border-radius:14px;border:1px solid #dbe7ff;background:#f8fbff;cursor:pointer}
+  .form-chip.selected{background:#0d6efd;color:#fff;border-color:#0d6efd}
+  .whoSigns{font-weight:600}
+  .signedTag{font-weight:700;color:#0d6efd}
+  .table thead th{vertical-align:middle}
+  .small-muted{font-size:0.85rem;color:#6c757d}
+  .done-check{width:18px;height:18px}
+  .sticky-top-small{position:sticky;top:0;background:#fff;z-index:10;padding-top:.75rem;padding-bottom:.5rem}
+  @media (max-width:768px){ .desktop-hide{display:none} }
+</style>
+</head>
+<body>
+<div class="container py-3">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-3 sticky-top-small">
+        <div>
+          <h3 class="mb-0 text-primary">TC Checklist & Timeline — CA Realtor</h3>
+          <div class="small-muted">Realtor & Transaction Coordinator combined tool — C.A.R. “Days After” rules applied</div>
+        </div>
+        <div class="text-end">
+          <button id="saveBtn" class="btn btn-outline-success btn-sm me-1"><i class="bi bi-save"></i> Save</button>
+          <button id="loadBtn" class="btn btn-outline-secondary btn-sm me-1"><i class="bi bi-folder-symlink"></i> Load</button>
+          <button id="clearBtn" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle"></i> Clear</button>
+        </div>
+      </div>
+
+      <!-- Intake -->
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0">Intake — Property & Contacts</h6></div>
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <label class="form-label">Transaction Side</label>
+              <select id="sideSelect" class="form-select">
+                <option value="seller">Seller Side</option>
+                <option value="buyer">Buyer Side</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Offer Accepted Date (effective acceptance)</label>
+              <input id="offerDate" type="date" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Property Address</label>
+              <input id="propertyAddress" class="form-control" placeholder="123 Main St, City, CA">
+            </div>
+
+            <!-- Seller contact -->
+            <div id="sellerBlock" class="col-12 mt-2">
+              <h6 class="small-muted">Seller / Listing</h6>
+              <div class="row g-2">
+                <div class="col-md-3"><input id="sellerName" class="form-control" placeholder="Seller Name(s)"></div>
+                <div class="col-md-3"><input id="sellerEmail" class="form-control" placeholder="Seller Email"></div>
+                <div class="col-md-3"><input id="sellerPhone" class="form-control" placeholder="Seller Phone"></div>
+                <div class="col-md-3"><input id="listingAgent" class="form-control" placeholder="Listing Agent"></div>
+                <div class="col-md-3"><input id="escrowCompany" class="form-control" placeholder="Escrow Company"></div>
+                <div class="col-md-3"><input id="escrowOfficer" class="form-control" placeholder="Escrow Officer / Contact"></div>
+                <div class="col-md-3"><input id="mlsAgent" class="form-control" placeholder="MLS/CO Agent (if any)"></div>
+              </div>
+            </div>
+
+            <!-- Buyer contact -->
+            <div id="buyerBlock" class="col-12 mt-3 d-none">
+              <h6 class="small-muted">Buyer / Buyer Agent</h6>
+              <div class="row g-2">
+                <div class="col-md-3"><input id="buyerName" class="form-control" placeholder="Buyer Name(s)"></div>
+                <div class="col-md-3"><input id="buyerEmail" class="form-control" placeholder="Buyer Email"></div>
+                <div class="col-md-3"><input id="buyerPhone" class="form-control" placeholder="Buyer Phone"></div>
+                <div class="col-md-3"><input id="buyerAgent" class="form-control" placeholder="Buyer Agent"></div>
+                <div class="col-md-3"><input id="lenderName" class="form-control" placeholder="Lender / Loan Officer"></div>
+                <div class="col-md-3"><input id="lenderContact" class="form-control" placeholder="Lender Contact"></div>
+              </div>
+            </div>
+
+            <!-- TC contact -->
+            <div class="col-12 mt-3">
+              <h6 class="small-muted">Transaction Coordinator (TC) Info</h6>
+              <div class="row g-2">
+                <div class="col-md-4"><input id="tcName" class="form-control" placeholder="TC Name"></div>
+                <div class="col-md-4"><input id="tcPhone" class="form-control" placeholder="TC Phone"></div>
+                <div class="col-md-4"><input id="tcEmail" class="form-control" placeholder="TC Email"></div>
+              </div>
+            </div>
+
+            <div class="col-12 mt-3">
+              <label class="form-label">Notes (trusts, probate, 1031, contingencies, seller instruction highlights)</label>
+              <textarea id="notes" class="form-control" rows="2" placeholder="Notes..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seller-specific instructions card -->
+      <div id="sellerInstructionsCard" class="card mb-3 d-none">
+        <div class="card-header bg-primary text-white"><strong>Seller Agent — MLS & Listing Quick Compliance</strong></div>
+        <div class="card-body">
+          <ul>
+            <li>MLS Entry: Enter Sold listing into MLS within <strong>14 days of Close of Escrow</strong> (follow your MLS rules).</li>
+            <li><strong>MetroList Permission to Post:</strong> may be submitted where allowed for Sold Off entries.</li>
+            <li><strong>Private Remarks:</strong> Follow MLS Rule 7.13 — do not include contact info, compensation language, or discriminatory content.</li>
+            <li>Only include the obligations and actions the <strong>seller's agent</strong> must follow; TC will track dates and confirmations.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Form selector & suggestions -->
+      <div class="row mb-3">
+        <div class="col-md-7">
+          <div class="card card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">Form Selector & Advisor</h6>
+              <small class="small-muted">Double-click a form to view suggestions</small>
+            </div>
+            <input id="formSearch" class="form-control mb-2" placeholder="Search forms (e.g., RPA, TDS, AVID)"/>
+            <div id="formsContainer" style="min-height:46px"></div>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="card card-body h-100">
+            <h6 class="mb-1">Selected Forms</h6>
+            <div id="selectedFormsContainer" class="mb-2 small-muted">No forms selected</div>
+            <div class="d-flex gap-2">
+              <button id="autoAddBtn" class="btn btn-sm btn-primary">Auto-add suggested companion forms</button>
+              <button id="genBtn" class="btn btn-sm btn-success">Generate Timeline & Checklist</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accordion - seller/buyer/tc tasks -->
+      <div class="accordion mb-3" id="mainAccordion"></div>
+
+      <!-- Export / actions -->
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <div class="small-muted">No 1-day reminders (per your preference). Dates use C.A.R. Days After rules.</div>
+        <div>
+          <button id="exportCSV" class="btn btn-outline-secondary btn-sm me-1"><i class="bi bi-file-earmark-spreadsheet"></i> Export CSV</button>
+          <button id="printBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-printer"></i> Print</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ------------------ Data: forms + categories + TC duties ------------------ */
+/* who: 'Seller' | 'Buyer' | 'Both' */
+const FORMS = {
+  RLA:{name:"Residential Listing Agreement",who:"Seller",side:"seller",requires:["AD","BCA"]},
+  MLSA:{name:"MLS Authorization / MLS Addendum",who:"Seller",side:"seller"},
+  AD:{name:"Agency Disclosure (AD)",who:"Both",side:"both"},
+  BCA:{name:"Broker Compensation Advisory (BCA)",who:"Both",side:"both"},
+  PRBS:{name:"Possible Representation Disclosure (PRBS)",who:"Both",side:"both"},
+  CCPA:{name:"CCPA Advisory",who:"Both",side:"both"},
+  SA:{name:"Seller Advisory (SA)",who:"Seller",side:"seller"},
+  FHDA:{name:"Fair Housing & Discrimination Advisory (FHDA)",who:"Both",side:"both"},
+  WFA:{name:"Wire Fraud Advisory (WFA)",who:"Both",side:"both"},
+  SPQ:{name:"Seller Property Questionnaire (SPQ)",who:"Seller",side:"seller"},
+  TDS:{name:"Transfer Disclosure Statement (TDS)",who:"Both",side:"seller",requires:["SPQ","Listing_AVID"]},
+  Listing_AVID:{name:"Listing AVID (Agent Visual Inspection - listing)",who:"Seller",side:"seller"},
+  WCMD:{name:"Water/CO/Smoke / Conservation (WCMD)",who:"Both",side:"both"},
+  SOLAR:{name:"Solar Disclosure / Questionnaire",who:"Both",side:"both"},
+  COMBINFO:{name:"Combined Info Guide (EPA + Seismic + Hazards)",who:"Both",side:"both"},
+  COUNTYDISC:{name:"Sacramento County Disclosures",who:"Both",side:"seller"},
+  NHD:{name:"Natural Hazard Disclosure & Receipt (NHD)",who:"Both",side:"both"},
+  RFR:{name:"Receipt for Reports (RFR)",who:"Both",side:"both"},
+  RR:{name:"Request for Repair (RR)",who:"Buyer",side:"both"},
+  RRRR:{name:"Request for Repair & Seller Response (RRRR)",who:"Seller",side:"both"},
+  VP:{name:"Verification of Property Condition (VP)",who:"Buyer",side:"both"},
+  BRBC:{name:"BRBC - Buyer Retention / Bring Back (client form)",who:"Buyer",side:"buyer"},
+  RPA:{name:"Residential Purchase Agreement (RPA)",who:"Both",side:"both",requires:["AD","AC"]},
+  AC:{name:"AC - Confirmation of Agency",who:"Both",side:"both"},
+  LBP:{name:"Lead-Based Paint Disclosure (LBP)",who:"Both",side:"both"},
+  MetroPermission:{name:"MetroList Permission to Post",who:"Seller",side:"seller"},
+  SmokeCO:{name:"Smoke & CO Compliance Certificate",who:"Seller",side:"seller"},
+  RCSD_S:{name:"Representative Capacity Signature Disclosure - Seller",who:"Seller",side:"seller"},
+  ADM:{name:"Addendum / Amendment",who:"Both",side:"both"}
+};
+
+/* Categories and tasks (verbatim style). DaysAfter defaults — editable */
+const CATEGORIES = {
+  /* Seller verbatim style categories & items */
+  "Listing Preparation":[
+    {id:"rla",task:"RLA — Residential Listing Agreement (sign)",daysAfter:0,forms:["RLA"],who:"Seller"},
+    {id:"mlsa",task:"MLSA — MLS Authorization / MLS input (Listing Agent)",daysAfter:0,forms:["MLSA"],who:"Seller"},
+    {id:"ad",task:"AD — Agency Disclosure provided & acknowledged",daysAfter:0,forms:["AD"],who:"Both"},
+    {id:"bca",task:"BCA — Broker Compensation Advisory (provide)",daysAfter:0,forms:["BCA"],who:"Both"},
+    {id:"prbs",task:"PRBS — Possible Representation Disclosure (team/dual)",daysAfter:0,forms:["PRBS"],who:"Both"},
+    {id:"sa",task:"SA — Seller Advisory (broker to seller)",daysAfter:0,forms:["SA"],who:"Seller"},
+  ],
+  "Disclosures & Local Docs":[
+    {id:"spq",task:"SPQ — Seller Property Questionnaire (complete)",daysAfter:0,forms:["SPQ"],who:"Seller"},
+    {id:"tds",task:"TDS — Transfer Disclosure Statement (deliver to buyer)",daysAfter:2,forms:["TDS"],who:"Both"},
+    {id:"avid",task:"Listing AVID — Agent Visual Inspection Disclosure (listing)",daysAfter:0,forms:["Listing_AVID"],who:"Seller"},
+    {id:"combined",task:"Combined Info Guide (EPA + Seismic + Hazards) (deliver)",daysAfter:0,forms:["COMBINFO"],who:"Both"},
+    {id:"county",task:"Sacramento County Disclosures (if in Sacramento) (deliver)",daysAfter:0,forms:["COUNTYDISC"],who:"Both"},
+    {id:"nhd",task:"NHD — Natural Hazard Disclosure & receipt",daysAfter:2,forms:["NHD","RFR"],who:"Both"},
+    {id:"wcmd",task:"WCMD — Water Conservation & Smoke/CO info",daysAfter:0,forms:["WCMD"],who:"Both"},
+    {id:"solar",task:"Solar Questionnaire / disclosures (if applicable)",daysAfter:0,forms:["SOLAR"],who:"Both"}
+  ],
+  "Escrow / Contract Delivery":[
+    {id:"deliver_rpa",task:"Deliver fully executed RPA to Escrow",daysAfter:0,forms:["RPA"],who:"Both"},
+    {id:"emd",task:"Confirm Earnest Money Deposit in Escrow",daysAfter:3,forms:["RFR"],who:"Both"},
+    {id:"prooffunds",task:"Provide proof of funds / lender pre-approval",daysAfter:2,forms:[],who:"Seller"},
+    {id:"prelim_title",task:"Order / Provide Preliminary Title Report",daysAfter:7,forms:[],who:"Seller"}
+  ],
+  "Contingency Deadlines":[
+    {id:"inspection_end",task:"Buyer Inspection Period Ends (contingency)",daysAfter:17,forms:["RR"],who:"Buyer"},
+    {id:"appraisal_rem",task:"Appraisal Contingency Removal",daysAfter:17,forms:[],who:"Buyer"},
+    {id:"loan_rem",task:"Loan Contingency Removal",daysAfter:21,forms:[],who:"Buyer"},
+    {id:"repair_process",task:"Process RR & Seller Response (RRRR)",daysAfter:12,forms:["RR","RRRR"],who:"Both"}
+  ],
+  "Pre-Close & COE":[
+    {id:"final_walk",task:"Final Walk-through / Verification of Property (VP)",daysAfter:27,forms:["VP"],who:"Buyer"},
+    {id:"smoke",task:"Confirm Smoke/CO certificate if required",daysAfter:15,forms:["SmokeCO"],who:"Seller"},
+    {id:"coeprep",task:"Prepare for Close of Escrow (COE)",daysAfter:30,forms:["COE"],who:"Both"}
+  ],
+  "After Close / MLS Rules":[
+    {id:"settlement",task:"Deliver final settlement statement & commission instructions",daysAfter:31,forms:[],who:"Seller"},
+    {id:"mlsentry",task:"Enter Sold listing into MLS (within 14 days of COE) / MetroList Permission to Post",daysAfter:31,forms:["MetroPermission"],who:"Seller"},
+    {id:"archive",task:"Archive transaction files & RFR (store documents)",daysAfter:32,forms:["RFR"],who:"Both"}
+  ],
+  /* Buyer side specific tasks (verbatim style) */
+  "Buyer - Offer & Docs":[
+    {id:"rpa_offer",task:"RPA — Offer & buyer signatures",daysAfter:0,forms:["RPA"],who:"Both"},
+    {id:"brbc",task:"BRBC / Buyer retention / Bring back flow",daysAfter:0,forms:["BRBC"],who:"Buyer"},
+    {id:"bia",task:"BIA — Buyer's Investigation Advisory (advise buyer to inspect)",daysAfter:0,forms:["BIA"],who:"Buyer"}
+  ],
+  "Buyer - Escrow / Contingencies":[
+    {id:"buyer_rr",task:"Submit Request for Repair (RR) if applicable",daysAfter:5,forms:["RR"],who:"Buyer"},
+    {id:"buyer_vp",task:"Final VP / Buyer confirmation pre-COE",daysAfter:27,forms:["VP"],who:"Buyer"}
+  ],
+  /* TC Duties (detailed: what a TC typically does) */
+  "TC Duties (Transaction Coordinator Tasks)":[
+    {id:"open_escrow",task:"Open escrow & upload signed contract to escrow portal",daysAfter:0,forms:[],who:"TC"},
+    {id:"upload_contract",task:"Upload fully executed contract to transaction management system (TMS)",daysAfter:0,forms:[],who:"TC"},
+    {id:"order_title",task:"Order preliminary title and vesting information",daysAfter:2,forms:[],who:"TC"},
+    {id:"order_nhd",task:"Order NHD report & deliver receipt to buyer",daysAfter:2,forms:["NHD"],who:"TC"},
+    {id:"order_inspect",task:"Coordinate home inspection & termite inspections (if buyer requests)",daysAfter:5,forms:[],who:"TC"},
+    {id:"track_contingencies",task:"Track contingency deadlines and update parties",daysAfter:0,forms:[],who:"TC"},
+    {id:"coordinate_repairs",task:"Coordinate repair estimates, approvals & RR docs",daysAfter:12,forms:["RR","RRRR"],who:"TC"},
+    {id:"confirm_lender",task:"Follow-up with lender for loan docs and approval",daysAfter:10,forms:[],who:"TC"},
+    {id:"order_finals",task:"Coordinate final docs, COE package, and wire instructions",daysAfter:25,forms:[],who:"TC"},
+    {id:"confirm_coe",task:"Confirm Close of Escrow completed and notify parties",daysAfter:30,forms:["COE"],who:"TC"},
+    {id:"commission_instr",task:"Prepare commission instructions & remit to escrow",daysAfter:31,forms:[],who:"TC"},
+    {id:"archive_tc",task:"Archive transaction in broker's TMS and local files",daysAfter:32,forms:["RFR"],who:"TC"}
+  ]
+};
+
+/* ---------- Holidays (MM-DD). Update as needed ---------- */
+const HOLIDAYS = ["01-01","01-20","02-17","05-26","06-19","07-04","09-01","10-13","11-11","11-27","12-25"];
+
+/* ---------- Utility: C.A.R. Days After calculation ----------
+   - Days After: do NOT count the acceptance date; counting begins the next day.
+   - Final day: if it falls on Sat/Sun/holiday -> roll forward to next business day.
+*/
+function isWeekend(d){ return d.getDay()===0 || d.getDay()===6; }
+function isHoliday(d){ const mmdd = d.toISOString().slice(5,10); return HOLIDAYS.includes(mmdd); }
+function calcDueDate_RPA(startDateISO, daysAfter){
+  if(!startDateISO) return null;
+  const d = new Date(startDateISO);
+  // add daysAfter calendar days (starting next day)
+  for(let i=0;i<daysAfter;i++){ d.setDate(d.getDate()+1); }
+  // roll forward if final day falls on weekend or holiday
+  while(isWeekend(d) || isHoliday(d)){ d.setDate(d.getDate()+1); }
+  return d;
+}
+
+/* ---------- Application State ---------- */
+let state = {
+  side:"seller", // seller|buyer
+  acceptanceDate:null,
+  selectedForms:[],
+  tasks:[], // flattened tasks with metadata
+  intake:{}
+};
+
+/* ---------- DOM refs ---------- */
+const sideSelect = document.getElementById('sideSelect');
+const offerDate = document.getElementById('offerDate');
+const sellerBlock = document.getElementById('sellerBlock');
+const buyerBlock = document.getElementById('buyerBlock');
+const sellerInstructionsCard = document.getElementById('sellerInstructionsCard');
+const formsContainer = document.getElementById('formsContainer');
+const selectedFormsContainer = document.getElementById('selectedFormsContainer');
+const formSearch = document.getElementById('formSearch');
+const genBtn = document.getElementById('genBtn');
+const mainAccordion = document.getElementById('mainAccordion');
+const saveBtn = document.getElementById('saveBtn');
+const loadBtn = document.getElementById('loadBtn');
+const clearBtn = document.getElementById('clearBtn');
+const exportCSV = document.getElementById('exportCSV');
+const printBtn = document.getElementById('printBtn');
+const autoAddBtn = document.getElementById('autoAddBtn');
+
+/* ---------- Render form chips depending on side ---------- */
+function renderFormChips(filter=""){
+  formsContainer.innerHTML = "";
+  Object.keys(FORMS).sort().forEach(code=>{
+    const f = FORMS[code];
+    if(state.side==="seller" && f.side==="buyer") return;
+    if(state.side==="buyer" && f.side==="seller") return;
+    if(filter && !(code.toLowerCase().includes(filter.toLowerCase()) || f.name.toLowerCase().includes(filter.toLowerCase()))) return;
+    const span = document.createElement('span');
+    span.className = 'form-chip';
+    if(state.selectedForms.includes(code)) span.classList.add('selected');
+    span.textContent = code;
+    span.title = f.name;
+    span.onclick = ()=> toggleForm(code);
+    span.ondblclick = ()=> showSuggestions(code);
+    formsContainer.appendChild(span);
+  });
+  renderSelectedForms();
+}
+function toggleForm(code){
+  const i = state.selectedForms.indexOf(code);
+  if(i>=0) state.selectedForms.splice(i,1);
+  else state.selectedForms.push(code);
+  renderFormChips(formSearch.value);
+}
+function renderSelectedForms(){
+  selectedFormsContainer.innerHTML = "";
+  if(state.selectedForms.length===0){ selectedFormsContainer.innerHTML = "<div class='small-muted'>No forms selected</div>"; return; }
+  state.selectedForms.forEach(code=>{
+    const f = FORMS[code];
+    const div = document.createElement('div');
+    div.className = 'mb-1';
+    div.innerHTML = `<span class="form-chip selected me-2">${code}</span><span class="small-muted">${f.name} — <strong>${f.who}</strong></span>`;
+    selectedFormsContainer.appendChild(div);
+  });
+}
+formSearch.addEventListener('input', e=> renderFormChips(e.target.value));
+autoAddBtn.addEventListener('click',()=>{
+  // auto-add companions of selected
+  const toAdd = new Set();
+  state.selectedForms.forEach(code=>{
+    const f = FORMS[code];
+    if(f && f.requires){
+      f.requires.forEach(r=>{
+        const rf = FORMS[r];
+        if(rf && (rf.side==="both"|| rf.side===state.side)) toAdd.add(r);
+      });
+    }
+  });
+  toAdd.forEach(x=> { if(!state.selectedForms.includes(x)) state.selectedForms.push(x); });
+  renderFormChips(formSearch.value);
+  if(toAdd.size) alert("Added: "+Array.from(toAdd).join(", "));
+});
+
+/* ---------- Build flattened tasks from categories given side ---------- */
+function buildTasksFromCategories(){
+  const tasks = [];
+  Object.keys(CATEGORIES).forEach(cat=>{
+    CATEGORIES[cat].forEach(item=>{
+      // include if forms are compatible with side (if any form belongs to other side exclusively, exclude)
+      let include = true;
+      if(item.forms && item.forms.length){
+        for(const f of item.forms){
+          const fd = FORMS[f];
+          if(fd && fd.side && fd.side!=="both" && fd.side!==state.side){ include = false; break; }
+        }
+      }
+      // If TC duties - include always
+      if(include){
+        tasks.push({
+          id:item.id,
+          category:cat,
+          task:item.task,
+          daysAfter:item.daysAfter,
+          forms:item.forms||[],
+          who:item.who,
+          done:false,
+          originalWho:item.who
+        });
+      }
+    });
+  });
+  return tasks;
+}
+
+/* ---------- Render accordion panels and tables ---------- */
+function renderAccordion(){
+  mainAccordion.innerHTML = "";
+  // Build data per side: include all categories but filter rows by side when appropriate
+  // We'll render categories as accordion items; inside, render a table with tasks relevant to state.side (seller/buyer) and TC duties visible always.
+  Object.keys(CATEGORIES).forEach((cat, idx)=>{
+    // filter rows to include
+    const rows = CATEGORIES[cat].filter(item=>{
+      // If TC Duties category, include always
+      if(cat.includes("TC Duties")) return true;
+      // check forms side compatibility
+      if(item.forms && item.forms.length){
+        for(const f of item.forms){
+          const fd = FORMS[f];
+          if(fd && fd.side && fd.side!=="both" && fd.side!==state.side) return false;
+        }
+      }
+      // For categories like Buyer-only, if state.side is seller but category is buyer-specific skip
+      if(cat.startsWith("Buyer") && state.side==="seller") return false;
+      // For categories like Listing Prep that are seller-specific, skip on buyer side
+      if(cat==="Listing Preparation" && state.side==="buyer") return false;
+      return true;
+    });
+    if(rows.length===0) return; // don't render empty category
+    const itemId = "acc"+idx;
+    const headerBtn = `<button class="accordion-button ${idx? "collapsed":""}" type="button" data-bs-toggle="collapse" data-bs-target="#${itemId}">${cat}</button>`;
+    const tableRows = rows.map((r,ri)=>{
+      // table row uses data attributes for state
+      return `<tr data-origwho="${r.who}" data-forms='${JSON.stringify(r.forms)}' data-id="${r.id}">
+        <td class="text-center align-middle"><input type="checkbox" class="form-check-input done-check" onchange="onTaskToggle(this)"></td>
+        <td class="align-middle">${r.task}</td>
+        <td class="align-middle"><input type="number" class="form-control form-control-sm daysInput" value="${r.daysAfter}" onchange="onDaysChange(this)"></td>
+        <td class="align-middle dueDateCell">-</td>
+        <td class="align-middle formsCell">${(r.forms && r.forms.length)? r.forms.map(f=>`${f} (${FORMS[f]?FORMS[f].who:"?"})`).join("<br>") : "-"}</td>
+      </tr>`;
+    }).join("");
+    const cardHTML = `
+      <div class="accordion-item mb-2">
+        <h2 class="accordion-header">
+          ${headerBtn}
+        </h2>
+        <div id="${itemId}" class="accordion-collapse collapse ${idx? "":"show"}" data-bs-parent="#mainAccordion">
+          <div class="accordion-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered mb-0">
+                <thead class="table-light">
+                  <tr><th style="width:6%">Done</th><th>Task</th><th style="width:12%">Days After</th><th style="width:14%">Due Date (C.A.R.)</th><th style="width:28%">Forms / Who Signs</th></tr>
+                </thead>
+                <tbody>${tableRows}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    mainAccordion.insertAdjacentHTML('beforeend', cardHTML);
+  });
+
+  // after rendering, compute due dates for rows
+  recomputeAllDueDates();
+}
+
+/* ---------- Handlers: days change, task toggle (done) ---------- */
+function onDaysChange(input){
+  const row = input.closest("tr");
+  recomputeRowDueDate(row);
+}
+function recomputeRowDueDate(row){
+  const days = parseInt(row.querySelector('.daysInput').value) || 0;
+  const dateISO = document.getElementById('offerDate').value;
+  const dueCell = row.querySelector('.dueDateCell');
+  if(!dateISO){ dueCell.textContent = "-"; return; }
+  const due = calcDueDate_RPA(dateISO, days);
+  dueCell.textContent = due? due.toLocaleDateString(): "-";
+}
+function recomputeAllDueDates(){
+  document.querySelectorAll('#mainAccordion tbody tr').forEach(row => recomputeRowDueDate(row));
+}
+
+/* When a task is toggled done/undone */
+window.onTaskToggle = function(cb){
+  const row = cb.closest("tr");
+  const origWho = row.dataset.origwho; // e.g., Seller/Buyer/Both/TC
+  const forms = JSON.parse(row.dataset.forms || "[]");
+  const formsCell = row.querySelector('.formsCell');
+  // Determine behavior:
+  // - If original who === "Both" and the current side (state.side) checks Done, that means the signer for that side has signed -> remaining signer needs to sign => display 'Buyer (needs to sign)' or 'Seller (needs to sign)' accordingly.
+  // - If original who === "Seller" and seller checks Done => show 'Signed by Seller'
+  // - If original who === "Buyer" and buyer checks Done => show 'Signed by Buyer'
+  // - If done unchecked -> revert to original labels
+  if(cb.checked){
+    // Update formsCell accordingly
+    if(forms.length===0){
+      // no forms listed - simply mark done
+      formsCell.innerHTML = `<span class="signedTag">Completed</span>`;
+    } else {
+      const labels = forms.map(code=>{
+        const fd = FORMS[code];
+        const original = fd? fd.who : "Both";
+        if(original==="Both"){
+          // remaining signer is the other side
+          const remaining = state.side==="seller" ? "Buyer (needs to sign)" : "Seller (needs to sign)";
+          return `${code} — ${remaining}`;
+        } else if(original==="Seller"){
+          return `${code} — Signed by Seller`;
+        } else if(original==="Buyer"){
+          return `${code} — Signed by Buyer`;
+        } else {
+          return `${code} — ${original}`;
+        }
+      });
+      formsCell.innerHTML = labels.join("<br>");
+    }
+  } else {
+    // revert to original labels (based on FORMS data)
+    if(forms.length===0) formsCell.textContent = "-";
+    else formsCell.innerHTML = forms.map(code=>{
+      const fd = FORMS[code];
+      const who = fd? fd.who : "Both";
+      return `${code} — ${who}`;
+    }).join("<br>");
+  }
+};
+
+/* ---------- Generate timeline & checklist flattening ---------- */
+genBtn.addEventListener('click', ()=>{
+  // gather intake & side & acceptance date
+  state.side = document.getElementById('sideSelect').value || "seller";
+  state.acceptanceDate = document.getElementById('offerDate').value || null;
+  // toggle intake UI
+  sellerBlock.classList.toggle('d-none', state.side!=="seller");
+  buyerBlock.classList.toggle('d-none', state.side!=="buyer");
+  sellerInstructionsCard.classList.toggle('d-none', state.side!=="seller");
+  // build accordion tasks
+  renderFormChips(); // refresh chips per side
+  renderAccordion();
+});
+
+/* ---------- Save / Load / Clear ---------- */
+saveBtn.addEventListener('click', ()=>{
+  // gather intake values
+  state.intake = {
+    side: document.getElementById('sideSelect').value,
+    offerDate: document.getElementById('offerDate').value,
+    propertyAddress: document.getElementById('propertyAddress').value,
+    sellerName: document.getElementById('sellerName').value,
+    sellerEmail: document.getElementById('sellerEmail').value,
+    sellerPhone: document.getElementById('sellerPhone').value,
+    listingAgent: document.getElementById('listingAgent').value,
+    escrowCompany: document.getElementById('escrowCompany').value,
+    escrowOfficer: document.getElementById('escrowOfficer').value,
+    buyerName: document.getElementById('buyerName').value,
+    buyerEmail: document.getElementById('buyerEmail').value,
+    buyerPhone: document.getElementById('buyerPhone').value,
+    buyerAgent: document.getElementById('buyerAgent').value,
+    lenderName: document.getElementById('lenderName').value,
+    lenderContact: document.getElementById('lenderContact').value,
+    tcName: document.getElementById('tcName').value,
+    tcPhone: document.getElementById('tcPhone').value,
+    tcEmail: document.getElementById('tcEmail').value,
+    notes: document.getElementById('notes').value,
+    selectedForms: state.selectedForms
+  };
+  // capture current checklist state (done flags and days)
+  const rows = [];
+  document.querySelectorAll('#mainAccordion tbody tr').forEach(r=>{
+    const id = r.dataset.id;
+    const done = r.querySelector('.done-check').checked;
+    const days = parseInt(r.querySelector('.daysInput').value) || 0;
+    rows.push({id,done,days});
+  });
+  state.tasksSnapshot = rows;
+  localStorage.setItem('tc_app_state', JSON.stringify(state));
+  alert('Saved locally (browser storage).');
+});
+loadBtn.addEventListener('click', ()=>{
+  const data = localStorage.getItem('tc_app_state');
+  if(!data){ alert('No saved state found.'); return; }
+  try{
+    state = JSON.parse(data);
+    // repopulate intake
+    const i = state.intake || {};
+    document.getElementById('sideSelect').value = i.side || 'seller';
+    document.getElementById('offerDate').value = i.offerDate || '';
+    document.getElementById('propertyAddress').value = i.propertyAddress || '';
+    document.getElementById('sellerName').value = i.sellerName || '';
+    document.getElementById('sellerEmail').value = i.sellerEmail || '';
+    document.getElementById('sellerPhone').value = i.sellerPhone || '';
+    document.getElementById('listingAgent').value = i.listingAgent || '';
+    document.getElementById('escrowCompany').value = i.escrowCompany || '';
+    document.getElementById('escrowOfficer').value = i.escrowOfficer || '';
+    document.getElementById('buyerName').value = i.buyerName || '';
+    document.getElementById('buyerEmail').value = i.buyerEmail || '';
+    document.getElementById('buyerPhone').value = i.buyerPhone || '';
+    document.getElementById('buyerAgent').value = i.buyerAgent || '';
+    document.getElementById('lenderName').value = i.lenderName || '';
+    document.getElementById('lenderContact').value = i.lenderContact || '';
+    document.getElementById('tcName').value = i.tcName || '';
+    document.getElementById('tcPhone').value = i.tcPhone || '';
+    document.getElementById('tcEmail').value = i.tcEmail || '';
+    document.getElementById('notes').value = i.notes || '';
+    state.selectedForms = i.selectedForms || [];
+    renderFormChips();
+    renderAccordion();
+    // restore row states
+    if(state.tasksSnapshot && state.tasksSnapshot.length){
+      const map = {};
+      state.tasksSnapshot.forEach(s=> map[s.id]=s);
+      document.querySelectorAll('#mainAccordion tbody tr').forEach(r=>{
+        const id = r.dataset.id;
+        const snapshot = map[id];
+        if(snapshot){
+          r.querySelector('.daysInput').value = snapshot.days;
+          r.querySelector('.done-check').checked = !!snapshot.done;
+          // trigger change to update UI
+          r.querySelector('.done-check').dispatchEvent(new Event('change'));
+          recomputeRowDueDate(r);
+        }
+      });
+    }
+    alert('Loaded saved state.');
+  }catch(e){ console.error(e); alert('Failed to load saved state.'); }
+});
+clearBtn.addEventListener('click', ()=>{
+  if(confirm('Clear local saved data and reset form?')){
+    localStorage.removeItem('tc_app_state');
+    location.reload();
+  }
+});
+
+/* ---------- Export CSV (includes intake + tasks) ---------- */
+exportCSV.addEventListener('click', ()=>{
+  // gather intake
+  const intake = {
+    side: document.getElementById('sideSelect').value,
+    offerDate: document.getElementById('offerDate').value,
+    propertyAddress: document.getElementById('propertyAddress').value,
+    sellerName: document.getElementById('sellerName').value,
+    sellerEmail: document.getElementById('sellerEmail').value,
+    sellerPhone: document.getElementById('sellerPhone').value,
+    listingAgent: document.getElementById('listingAgent').value,
+    escrowCompany: document.getElementById('escrowCompany').value,
+    escrowOfficer: document.getElementById('escrowOfficer').value,
+    buyerName: document.getElementById('buyerName').value,
+    buyerEmail: document.getElementById('buyerEmail').value,
+    buyerPhone: document.getElementById('buyerPhone').value,
+    buyerAgent: document.getElementById('buyerAgent').value,
+    lenderName: document.getElementById('lenderName').value,
+    lenderContact: document.getElementById('lenderContact').value,
+    tcName: document.getElementById('tcName').value,
+    tcPhone: document.getElementById('tcPhone').value,
+    tcEmail: document.getElementById('tcEmail').value,
+    notes: document.getElementById('notes').value
+  };
+  // tasks
+  const rows = [];
+  document.querySelectorAll('#mainAccordion tbody tr').forEach(r=>{
+    const taskText = r.children[1].textContent.trim();
+    const days = r.querySelector('.daysInput').value;
+    const due = r.querySelector('.dueDateCell').textContent;
+    const forms = r.querySelector('.formsCell').innerText.replace(/\n/g,'; ');
+    const done = r.querySelector('.done-check').checked ? 'Yes' : 'No';
+    rows.push({task:taskText,days,due,forms,done});
+  });
+
+  // Build CSV
+  let csv = `Side,${intake.side}\nAddress,"${intake.propertyAddress}"\nOffer Accepted,${intake.offerDate}\nSeller,"${intake.sellerName}",${intake.sellerPhone},${intake.sellerEmail}\nListing Agent,${intake.listingAgent}\nEscrow,${intake.escrowCompany},${intake.escrowOfficer}\nBuyer,"${intake.buyerName}",${intake.buyerPhone},${intake.buyerEmail}\nBuyer Agent,${intake.buyerAgent}\nLender,${intake.lenderName},${intake.lenderContact}\nTC,"${intake.tcName}",${intake.tcPhone},${intake.tcEmail}\nNotes,"${(intake.notes||"").replace(/"/g,'""')}"\n\nTask,DaysAfter,DueDate,Forms,Done\n`;
+  rows.forEach(r=>{
+    csv += `"${r.task}",${r.days},"${r.due}","${r.forms}",${r.done}\n`;
+  });
+
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tc_timeline_${(new Date()).toISOString().slice(0,10)}.csv`;
+  a.click();
+});
+
+/* ---------- Print ---------- */
+printBtn.addEventListener('click', ()=> window.print());
+
+/* ---------- Suggestions modal (simple alert fallback) ---------- */
+function showSuggestions(code){
+  const f = FORMS[code];
+  if(!f || !f.requires || !f.requires.length){ alert(f? f.name + "\nNo suggested companions.": "No info"); return; }
+  if(confirm(`${f.name}\nSuggested companion forms: ${f.requires.join(", ")}\n\nAdd suggested forms to selected list?`)){
+    f.requires.forEach(r=>{
+      if(!state.selectedForms.includes(r)) state.selectedForms.push(r);
+    });
+    renderFormChips(formSearch.value);
+  }
+}
+
+/* ---------- Initial UI setup ---------- */
+(function init(){
+  renderFormChips();
+  // default view: seller
+  document.getElementById('sideSelect').value = 'seller';
+  sellerBlock.classList.remove('d-none');
+  sellerInstructionsCard.classList.remove('d-none');
+})();
+</script>
+</body>
+</html>
