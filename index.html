@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>California TC Checklist & Timeline | Isabella Young</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+body { background:#f8f9fa; font-size:0.95rem; }
+h1 { font-size:1.5rem; margin-top:1rem; }
+.accordion-button:not(.collapsed){ background:#0d6efd; color:#fff;}
+.table td, .table th{ vertical-align:middle;}
+.done-check{ width:1.3em; height:1.3em;}
+footer { text-align:center; padding:1rem; font-size:0.85rem; color:#6c757d; border-top:1px solid #dee2e6; margin-top:2rem; }
+@media (max-width:768px){ body{font-size:0.9rem;} h1{font-size:1.25rem;} }
+</style>
+</head>
+<body>
+<div class="container py-3">
+  <h1 class="text-center fw-bold mb-3">CA Realtor / TC Checklist & Timeline</h1>
+
+  <!-- Side selector -->
+  <div class="mb-3">
+    <label class="form-label fw-semibold">Select Transaction Side</label>
+    <select id="sideSelect" class="form-select w-auto">
+      <option value="">-- Choose --</option>
+      <option value="seller">Seller Side</option>
+      <option value="buyer">Buyer Side</option>
+    </select>
+  </div>
+
+  <!-- Seller instructions -->
+  <div id="sellerInstructions" class="card mb-3 d-none">
+    <div class="card-header bg-info text-white fw-semibold">Seller Offer Instructions & MLS Rules</div>
+    <div class="card-body">
+      <ul>
+        <li><strong>MLS Entry Rule:</strong> Listing must be entered into the MLS within <strong>14 days of Close of Escrow.</strong></li>
+        <li><strong>Permission to Post:</strong> A fully executed <em>MetroList Permission to Post</em> form (or equivalent) may be submitted for Sold-Off MLS listings.</li>
+        <li><strong>Private Remarks:</strong> Follow <strong>MLS Rule 7.13</strong> — no contact info, compensation details, or discriminatory language.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Accordion container -->
+  <div class="accordion" id="checklistAccordion"></div>
+</div>
+
+<footer>
+  © Isabella Young | California Realtor | DRE #02070910
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ---------------------- CHECKLIST DATA ----------------------
+const CHECKLISTS = {
+seller:[
+  {
+    title:"Listing Preparation",
+    tasks:[
+      {form:"RLA",name:"Residential Listing Agreement",who:"Seller"},
+      {form:"MLSA",name:"MLS Authorization",who:"Seller"},
+      {form:"AD",name:"Agency Disclosure",who:"Both"},
+      {form:"BCA",name:"Broker Commission Advisory",who:"Both"},
+      {form:"PRBS",name:"Possible Representation Disclosure",who:"Both"},
+      {form:"CCPA",name:"Consumer Privacy Act Disclosure",who:"Both"},
+      {form:"SA",name:"Seller Advisory",who:"Both"},
+      {form:"FHDA",name:"Fair Housing & Discrimination Advisory",who:"Both"},
+      {form:"WFA",name:"Wire Fraud Advisory",who:"Both"}
+    ]
+  },
+  {
+    title:"Disclosures & Reports",
+    tasks:[
+      {form:"SPQ",name:"Seller Property Questionnaire",who:"Seller"},
+      {form:"TDS",name:"Transfer Disclosure Statement",who:"Both"},
+      {form:"AVID",name:"Agent Visual Inspection Disclosure",who:"Both"},
+      {form:"WCMD",name:"Water Conservation & CO Disclosure",who:"Both"},
+      {form:"SOLAR",name:"Solar Disclosure",who:"Both"},
+      {form:"COMBINFO",name:"Combined Info Guide (EPA + Seismic + Hazards)",who:"Both"},
+      {form:"COUNTYDISC",name:"Sacramento County Disclosures",who:"Both"},
+      {form:"NHD",name:"Natural Hazard Disclosure Receipt",who:"Both"}
+    ]
+  },
+  {
+    title:"Escrow & Closing",
+    tasks:[
+      {form:"ADM",name:"Addendum",who:"Both"},
+      {form:"RR",name:"Request for Repairs / Credits",who:"Both"},
+      {form:"RCSD-S",name:"Representative Capacity Disclosure – Seller",who:"Seller"},
+      {form:"RLA-CAA",name:"Commission Adjustment Addendum",who:"Seller"},
+      {form:"SmokeCO",name:"Smoke/CO Compliance Certificate",who:"Seller"}
+    ]
+  }
+],
+buyer:[
+  {
+    title:"Offer & Acceptance",
+    tasks:[
+      {form:"RPA",name:"Residential Purchase Agreement",who:"Both"},
+      {form:"BRBC",name:"Buyer Representation & Broker Comp Agreement",who:"Buyer"},
+      {form:"AD",name:"Agency Disclosure",who:"Both"},
+      {form:"BIA",name:"Buyer’s Inspection Advisory",who:"Buyer"},
+      {form:"PRBS",name:"Possible Representation Disclosure",who:"Both"}
+    ]
+  },
+  {
+    title:"Escrow & Contingencies",
+    tasks:[
+      {form:"RR",name:"Request for Repairs / Credits",who:"Both"},
+      {form:"ADM",name:"Addendum",who:"Both"},
+      {form:"VP",name:"Verification of Property Condition",who:"Both"},
+      {form:"TDS",name:"Transfer Disclosure Statement",who:"Both"},
+      {form:"SPQ",name:"Seller Property Questionnaire",who:"Both"}
+    ]
+  },
+  {
+    title:"Loan / Closing",
+    tasks:[
+      {form:"LC",name:"Loan Contingency Removal (if applicable)",who:"Buyer"},
+      {form:"AP",name:"Appraisal Contingency Removal",who:"Buyer"},
+      {form:"CD",name:"Closing Disclosure Acknowledgement",who:"Buyer"},
+      {form:"COE",name:"Close of Escrow",who:"Both"}
+    ]
+  }
+]
+};
+
+// ---------------------- RENDER ----------------------
+const acc = document.getElementById("checklistAccordion");
+const sideSel = document.getElementById("sideSelect");
+const sellerCard = document.getElementById("sellerInstructions");
+
+function renderChecklist(side){
+  acc.innerHTML="";
+  if(!side) return;
+  const data = CHECKLISTS[side];
+  sellerCard.classList.toggle("d-none", side!=="seller");
+
+  data.forEach((section,idx)=>{
+    const itemId = "sect"+idx;
+    const html = `
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="h${itemId}">
+          <button class="accordion-button ${idx>0?"collapsed":""}" type="button" data-bs-toggle="collapse" data-bs-target="#c${itemId}">
+            ${section.title}
+          </button>
+        </h2>
+        <div id="c${itemId}" class="accordion-collapse collapse ${idx==0?"show":""}" data-bs-parent="#checklistAccordion">
+          <div class="accordion-body p-0">
+            <table class="table table-striped table-bordered mb-0">
+              <thead class="table-light">
+                <tr><th style="width:6%">Done</th><th style="width:10%">Form</th><th>Form Name</th><th style="width:18%">Who Signs</th></tr>
+              </thead>
+              <tbody>
+                ${section.tasks.map((t,i)=>`
+                  <tr data-side="${side}">
+                    <td class="text-center">
+                      <input type="checkbox" class="form-check-input done-check" onchange="toggleDone(this)">
+                    </td>
+                    <td>${t.form}</td>
+                    <td>${t.name}</td>
+                    <td class="whoSigns">${t.who}</td>
+                  </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+    acc.insertAdjacentHTML("beforeend",html);
+  });
+}
+
+sideSel.addEventListener("change",e=>renderChecklist(e.target.value));
+
+// ---------------------- SIGNER FLIP ----------------------
+window.toggleDone = function(cb){
+  const row = cb.closest("tr");
+  const cell = row.querySelector(".whoSigns");
+  let side = row.dataset.side;
+  if(cell.textContent==="Both"){
+    cell.textContent = side==="seller"?"Buyer":"Seller";
+  } else if(!cb.checked){
+    cell.textContent = "Both";
+  }
+};
+</script>
+</body>
+</html>
